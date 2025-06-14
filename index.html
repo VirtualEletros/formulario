@@ -33,9 +33,13 @@
                             <span class="step-number">4</span>
                             <span class="step-text">Confirmação</span>
                         </div>
+                        <div class="step" data-step="5">
+                            <span class="step-number">5</span>
+                            <span class="step-text">Identificação</span>
+                        </div>
                     </div>
                     <div class="progress-line">
-                        <div class="progress-fill" style="width: 25%"></div>
+                        <div class="progress-fill" style="width: 20%"></div>
                     </div>
                 </div>
 
@@ -251,41 +255,37 @@
                     
                     <div class="buttons-group">
                         <button type="button" class="btn prev-btn">Voltar</button>
-                        <button type="submit" class="btn submit-btn">Enviar Ficha</button>
+                        <button type="button" class="btn next-btn">Enviar Ficha</button>
                     </div>
                 </div>
-            
-<!-- Passo 5 - Verificação de Identidade -->
-<div class="form-step" data-step="5">
-    <div class="form-header">
-        <div class="title">
-            <h1>Verificação de Identidade</h1>
-        </div>
-    </div>
 
-    <div class="input-group">
-        <p style="margin-bottom: 1rem;">Por favor, tire uma selfie segurando seu documento (RG ou CNH) próximo ao rosto para confirmação de identidade.</p>
+                <!-- Passo 5 - Verificação de Identidade -->
+                <div class="form-step" data-step="5">
+                    <div class="form-header">
+                        <div class="title">
+                            <h1>Verificação de Identidade</h1>
+                        </div>
+                    </div>
 
-        <div class="input-box">
-            <video id="camera" width="100%" autoplay playsinline style="border-radius: 10px; box-shadow: 1px 1px 6px rgba(0,0,0,0.1);"></video>
-        </div>
+                    <div class="input-group">
+                        <p style="margin-bottom: 1rem; text-align: center;">Por favor, tire uma selfie segurando seu documento (RG ou CNH) próximo ao rosto para confirmação de identidade.</p>
 
-        <div class="input-box" style="text-align: center;">
-            <button type="button" class="btn" id="captureBtn">Tirar Foto</button>
-        </div>
+                        <div class="input-box">
+                            <video id="camera" width="100%" autoplay playsinline style="border-radius: 10px; box-shadow: 1px 1px 6px rgba(0,0,0,0.1); display: none;"></video>
+                            <img id="photo" src="" alt="Sua foto aparecerá aqui" style="max-width:100%; display:none; border-radius:10px;">
+                        </div>
 
-        <div class="input-box">
-            <canvas id="snapshot" width="640" height="480" style="display: none;"></canvas>
-            <img id="photo" src="" alt="Sua foto aparecerá aqui" style="max-width:100%; display:none; border-radius:10px;">
-        </div>
-    </div>
+                        <div class="input-box" style="text-align: center;">
+                            <button type="button" class="btn" id="captureBtn" style="display: none;">Tirar Foto</button>
+                        </div>
+                    </div>
 
-    <div class="buttons-group">
-        <button type="button" class="btn prev-btn">Voltar</button>
-        <button type="submit" class="btn submit-btn">Enviar Ficha</button>
-    </div>
-</div>
-</form>
+                    <div class="buttons-group">
+                        <button type="button" class="btn prev-btn">Voltar</button>
+                        <button type="submit" class="btn submit-btn">Finalizar Cadastro</button>
+                    </div>
+                </div>
+            </form>
         </div>
     </div>
 
