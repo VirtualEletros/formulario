@@ -205,19 +205,20 @@
                                 <option value="other">Outro</option>
                             </select>
                         </div>
-
+                
                         <div class="input-box">
                             <label for="reference_phone1">Telefone de Referência 1 *</label>
                             <input id="reference_phone1" type="tel" name="reference_phone1" placeholder="(00) 0000-0000" required>
+                            <small class="error-message" id="reference_phone1-error"></small>
                         </div>
-
+                
                         <div class="input-box">
-                            <label for="reference_phone2">Telefone de Referência 2 *</label>
-                            <input id="reference_phone2" type="tel" name="reference_phone2" placeholder="(00) 0000-0000" required>
+                            <label for="reference_phone2">Telefone de Referência 2 (Opcional)</label>
+                            <input id="reference_phone2" type="tel" name="reference_phone2" placeholder="(00) 0000-0000">
                         </div>
-
+                
                         <div class="input-box">
-                            <label for="installment_date">Data Fixa para Parcelas</label>
+                            <label for="installment_date">Dia de vencimento para demais parcelas *</label>
                             <input id="installment_date" type="number" name="installment_date" placeholder="Dia do mês" min="1" max="31" required>
                         </div>
                     </div>
@@ -253,7 +254,38 @@
                         <button type="submit" class="btn submit-btn">Enviar Ficha</button>
                     </div>
                 </div>
-            </form>
+            
+<!-- Passo 5 - Verificação de Identidade -->
+<div class="form-step" data-step="5">
+    <div class="form-header">
+        <div class="title">
+            <h1>Verificação de Identidade</h1>
+        </div>
+    </div>
+
+    <div class="input-group">
+        <p style="margin-bottom: 1rem;">Por favor, tire uma selfie segurando seu documento (RG ou CNH) próximo ao rosto para confirmação de identidade.</p>
+
+        <div class="input-box">
+            <video id="camera" width="100%" autoplay playsinline style="border-radius: 10px; box-shadow: 1px 1px 6px rgba(0,0,0,0.1);"></video>
+        </div>
+
+        <div class="input-box" style="text-align: center;">
+            <button type="button" class="btn" id="captureBtn">Tirar Foto</button>
+        </div>
+
+        <div class="input-box">
+            <canvas id="snapshot" width="640" height="480" style="display: none;"></canvas>
+            <img id="photo" src="" alt="Sua foto aparecerá aqui" style="max-width:100%; display:none; border-radius:10px;">
+        </div>
+    </div>
+
+    <div class="buttons-group">
+        <button type="button" class="btn prev-btn">Voltar</button>
+        <button type="submit" class="btn submit-btn">Enviar Ficha</button>
+    </div>
+</div>
+</form>
         </div>
     </div>
 
