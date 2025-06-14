@@ -5,7 +5,13 @@ document.addEventListener('DOMContentLoaded', function() {
     const progressFill = document.querySelector('.progress-fill');
     const nextButtons = document.querySelectorAll('.next-btn');
     const prevButtons = document.querySelectorAll('.prev-btn');
+    const cameraStep = document.querySelector('.form-step[data-step="5"]');
+    const video = document.getElementById('camera');
+    const canvas = document.getElementById('snapshot');
+    const photo = document.getElementById('photo');
+    const captureBtn = document.getElementById('captureBtn');
     let currentStep = 0;
+    let stream = null;
 
     // Máscaras para campos
     const cpfInput = document.getElementById('cpf');
@@ -97,6 +103,9 @@ document.addEventListener('DOMContentLoaded', function() {
     // Event listeners para botões "Voltar"
     prevButtons.forEach(button => {
         button.addEventListener('click', function() {
+            if (currentStep === 4) { // Se estiver saindo do passo da câmera
+                stopCamera();
+            }
             currentStep--;
             updateProgressBar();
             showStep(currentStep);
@@ -118,11 +127,18 @@ document.addEventListener('DOMContentLoaded', function() {
             });
         }
 
-        // Muda o texto do último botão para "Enviar" no último passo
+        // Ajusta os botões conforme o passo
         if (stepIndex === steps.length - 1) {
             document.querySelector('.next-btn').style.display = 'none';
             document.querySelector('.submit-btn').style.display = 'block';
+        } else if (stepIndex === 3) { // Passo 4 (confirmação)
+            document.querySelector('.next-btn').style.display = 'block';
+            document.querySelector('.submit-btn').style.display = 'none';
             updateSummary();
+        } else if (stepIndex === 4) { // Passo 5 (câmera)
+            document.querySelector('.next-btn').style.display = 'none';
+            document.querySelector('.submit-btn').style.display = 'block';
+            initCamera();
         } else {
             document.querySelector('.next-btn').style.display = 'block';
             document.querySelector('.submit-btn').style.display = 'none';
@@ -203,6 +219,54 @@ document.addEventListener('DOMContentLoaded', function() {
         return isValid;
     }
 
+    // Inicializa a câmera
+    function initCamera() {
+        if (!stream && video) {
+            video.style.display = 'block';
+            captureBtn.style.display = 'block';
+            
+            navigator.mediaDevices.getUserMedia({ video: true, facingMode: 'user' })
+                .then(s => {
+                    stream = s;
+                    video.srcObject = stream;
+                })
+                .catch(err => {
+                    console.error('Erro ao acessar a câmera:', err);
+                    alert('Não foi possível acessar a câmera. Por favor, verifique as permissões e tente novamente.');
+                    video.style.display = 'none';
+                    captureBtn.style.display = 'none';
+                });
+        }
+    }
+
+    // Para a câmera
+    function stopCamera() {
+        if (stream) {
+            stream.getTracks().forEach(track => track.stop());
+            stream = null;
+            if (video) video.srcObject = null;
+        }
+        if (video) video.style.display = 'none';
+        if (captureBtn) captureBtn.style.display = 'none';
+        if (photo) photo.style.display = 'none';
+    }
+
+    // Evento para capturar foto
+    if (captureBtn) {
+        captureBtn.addEventListener('click', () => {
+            const context = canvas.getContext('2d');
+            canvas.width = video.videoWidth;
+            canvas.height = video.videoHeight;
+            context.drawImage(video, 0, 0, canvas.width, canvas.height);
+
+            const dataURL = canvas.toDataURL('image/png');
+            photo.src = dataURL;
+            photo.style.display = 'block';
+            video.style.display = 'none';
+            captureBtn.style.display = 'none';
+        });
+    }
+
     // Marcar campo como inválido
     function markAsInvalid(input, message) {
         input.style.border = '1px solid #ff4444';
@@ -281,6 +345,40 @@ document.addEventListener('DOMContentLoaded', function() {
         return true;
     }
 
+    // Retorna o nome completo do estado pela sigla
+    function getStateName(uf) {
+        const states = {
+            'AC': 'Acre',
+            'AL': 'Alagoas',
+            'AP': 'Amapá',
+            'AM': 'Amazonas',
+            'BA': 'Bahia',
+            'CE': 'Ceará',
+            'DF': 'Distrito Federal',
+            'ES': 'Espírito Santo',
+            'GO': 'Goiás',
+            'MA': 'Maranhão',
+            'MT': 'Mato Grosso',
+            'MS': 'Mato Grosso do Sul',
+            'MG': 'Minas Gerais',
+            'PA': 'Pará',
+            'PB': 'Paraíba',
+            'PR': 'Paraná',
+            'PE': 'Pernambuco',
+            'PI': 'Piauí',
+            'RJ': 'Rio de Janeiro',
+            'RN': 'Rio Grande do Norte',
+            'RS': 'Rio Grande do Sul',
+            'RO': 'Rondônia',
+            'RR': 'Roraima',
+            'SC': 'Santa Catarina',
+            'SP': 'São Paulo',
+            'SE': 'Sergipe',
+            'TO': 'Tocantins'
+        };
+        return states[uf] || uf;
+    }
+
     // Atualiza o resumo no último passo
     function updateSummary() {
         const summaryContent = document.getElementById('summaryContent');
@@ -314,7 +412,7 @@ document.addEventListener('DOMContentLoaded', function() {
             if (input && input.value) {
                 const summaryItem = document.createElement('div');
                 summaryItem.className = 'summary-item';
-                
+
                 const label = document.createElement('span');
                 label.className = 'summary-label';
                 label.textContent = field.label + ':';
@@ -355,40 +453,6 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     }
 
-    // Retorna o nome completo do estado pela sigla
-    function getStateName(uf) {
-        const states = {
-            'AC': 'Acre',
-            'AL': 'Alagoas',
-            'AP': 'Amapá',
-            'AM': 'Amazonas',
-            'BA': 'Bahia',
-            'CE': 'Ceará',
-            'DF': 'Distrito Federal',
-            'ES': 'Espírito Santo',
-            'GO': 'Goiás',
-            'MA': 'Maranhão',
-            'MT': 'Mato Grosso',
-            'MS': 'Mato Grosso do Sul',
-            'MG': 'Minas Gerais',
-            'PA': 'Pará',
-            'PB': 'Paraíba',
-            'PR': 'Paraná',
-            'PE': 'Pernambuco',
-            'PI': 'Piauí',
-            'RJ': 'Rio de Janeiro',
-            'RN': 'Rio Grande do Norte',
-            'RS': 'Rio Grande do Sul',
-            'RO': 'Rondônia',
-            'RR': 'Roraima',
-            'SC': 'Santa Catarina',
-            'SP': 'São Paulo',
-            'SE': 'Sergipe',
-            'TO': 'Tocantins'
-        };
-        return states[uf] || uf;
-    }
-    
     const vendedores = {
         monique: '5521985680490',
         hudson: '5598988888888',
@@ -412,8 +476,14 @@ document.addEventListener('DOMContentLoaded', function() {
     form.addEventListener('submit', function(e) {
         e.preventDefault();
 
+        // Se estiver no passo 5 (câmera), verifique se a foto foi tirada
+        if (currentStep === 4 && !photo.src) {
+            alert('Por favor, tire uma foto segurando seu documento para verificação de identidade.');
+            return;
+        }
+
         // Verifica se todos os campos obrigatórios estão preenchidos
-        if (!validateStep(currentStep) || !document.getElementById('terms').checked) {
+        if (!validateStep(currentStep) || (currentStep === 3 && !document.getElementById('terms').checked)) {
             alert('Preencha todos os campos obrigatórios e aceite os termos.');
             return;
         }
@@ -421,6 +491,14 @@ document.addEventListener('DOMContentLoaded', function() {
         // Verifica se o vendedor é válido
         if (!vendedor || !vendedores[vendedor]) {
             alert('Vendedor não identificado na URL. Use ?vendedor=nome (ex: monique, hudson, joao).');
+            return;
+        }
+
+        // Se não estiver no passo 5, avance para o passo da câmera
+        if (currentStep < 4) {
+            currentStep = 4; // Vai para o passo 5 (câmera)
+            updateProgressBar();
+            showStep(currentStep);
             return;
         }
 
@@ -446,49 +524,27 @@ document.addEventListener('DOMContentLoaded', function() {
         mensagem += `${neighborhood} - ${city}/${state}%0A%0A`;
         mensagem += `*👨‍💼 Vendedor:* ${vendedor.toUpperCase()}`;
 
+        // Adiciona a foto se existir
+        if (photo.src) {
+            mensagem += `%0A%0A*📸 Foto de verificação enviada*`;
+        }
+
         // Número do vendedor
         const numero = vendedores[vendedor];
         const urlWhatsapp = `https://wa.me/${numero}?text=${mensagem}`;
+
+        // Para a câmera antes de redirecionar
+        stopCamera();
 
         // Abre o WhatsApp em uma nova aba
         window.open(urlWhatsapp, '_blank');
         
         // Opcional: Limpa o formulário após o envio
         // form.reset();
+        
+        // Opcional: Volta para o primeiro passo
+        // currentStep = 0;
+        // showStep(currentStep);
+        // updateProgressBar();
     });
 });
-// Controle da câmera
-const video = document.getElementById('camera');
-const canvas = document.getElementById('snapshot');
-const photo = document.getElementById('photo');
-const captureBtn = document.getElementById('captureBtn');
-
-let stream = null;
-
-if (video) {
-    navigator.mediaDevices.getUserMedia({ video: true })
-        .then(s => {
-            stream = s;
-            video.srcObject = stream;
-        })
-        .catch(err => {
-            console.error('Erro ao acessar a câmera:', err);
-            alert('Erro ao acessar a câmera. Verifique as permissões.');
-        });
-}
-
-if (captureBtn) {
-    captureBtn.addEventListener('click', () => {
-        const context = canvas.getContext('2d');
-        canvas.width = video.videoWidth;
-        canvas.height = video.videoHeight;
-        context.drawImage(video, 0, 0, canvas.width, canvas.height);
-
-        const dataURL = canvas.toDataURL('image/png');
-        photo.src = dataURL;
-        photo.style.display = 'block';
-        canvas.style.display = 'none';
-
-        console.log('Imagem capturada:', dataURL);
-    });
-}
