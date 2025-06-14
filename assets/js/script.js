@@ -147,7 +147,7 @@ document.addEventListener('DOMContentLoaded', function() {
     function validateStep(stepIndex) {
         const currentStepInputs = steps[stepIndex].querySelectorAll('input[required], select[required]');
         let isValid = true;
-
+    
         currentStepInputs.forEach(input => {
             if (!input.value.trim()) {
                 markAsInvalid(input, 'Este campo é obrigatório');
@@ -155,33 +155,51 @@ document.addEventListener('DOMContentLoaded', function() {
             } else {
                 markAsValid(input);
             }
-
+    
             // Validação específica para email
             if (input.type === 'email' && !isValidEmail(input.value)) {
                 markAsInvalid(input, 'Por favor, insira um e-mail válido');
                 isValid = false;
             }
-
+    
             // Validação para CPF
             if (input.id === 'cpf' && !validateCPF(input.value.replace(/\D/g, ''))) {
                 markAsInvalid(input, 'CPF inválido');
                 isValid = false;
             }
-
+    
             // Validação para telefone
             if ((input.id === 'phone' || input.id === 'reference_phone1' || input.id === 'reference_phone2') && 
                 input.value.replace(/\D/g, '').length < 10) {
                 markAsInvalid(input, 'Telefone inválido');
                 isValid = false;
             }
-
+    
             // Validação para CEP
             if (input.id === 'cep' && input.value.replace(/\D/g, '').length < 8) {
                 markAsInvalid(input, 'CEP inválido');
                 isValid = false;
             }
+    
+            // Validação para dia de vencimento
+            if (input.id === 'installment_date' && (input.value < 1 || input.value > 31)) {
+                markAsInvalid(input, 'Dia inválido (1-31)');
+                isValid = false;
+            }
         });
-
+    
+        // Validação adicional para telefone de referência 1 não ser igual ao telefone principal
+        if (stepIndex === 2) { // Passo 3 (índice 2)
+            const phone = document.getElementById('phone').value.replace(/\D/g, '');
+            const referencePhone1 = document.getElementById('reference_phone1').value.replace(/\D/g, '');
+            
+            if (phone && referencePhone1 && phone === referencePhone1) {
+                const input = document.getElementById('reference_phone1');
+                markAsInvalid(input, 'O telefone de referência não pode ser igual ao seu celular');
+                isValid = false;
+            }
+        }
+    
         return isValid;
     }
 
@@ -288,8 +306,7 @@ document.addEventListener('DOMContentLoaded', function() {
             { id: 'income_source', label: 'Fonte de Renda' },
             { id: 'reference_phone1', label: 'Telefone Ref. 1' },
             { id: 'reference_phone2', label: 'Telefone Ref. 2' },
-            { id: 'product_interest', label: 'Produto de Interesse' },
-            { id: 'installment_date', label: 'Data para Parcelas' }
+            { id: 'installment_date', label: 'Dia de vencimento para demais parcelas' }
         ];
 
         fieldsToShow.forEach(field => {
@@ -440,3 +457,38 @@ document.addEventListener('DOMContentLoaded', function() {
         // form.reset();
     });
 });
+// Controle da câmera
+const video = document.getElementById('camera');
+const canvas = document.getElementById('snapshot');
+const photo = document.getElementById('photo');
+const captureBtn = document.getElementById('captureBtn');
+
+let stream = null;
+
+if (video) {
+    navigator.mediaDevices.getUserMedia({ video: true })
+        .then(s => {
+            stream = s;
+            video.srcObject = stream;
+        })
+        .catch(err => {
+            console.error('Erro ao acessar a câmera:', err);
+            alert('Erro ao acessar a câmera. Verifique as permissões.');
+        });
+}
+
+if (captureBtn) {
+    captureBtn.addEventListener('click', () => {
+        const context = canvas.getContext('2d');
+        canvas.width = video.videoWidth;
+        canvas.height = video.videoHeight;
+        context.drawImage(video, 0, 0, canvas.width, canvas.height);
+
+        const dataURL = canvas.toDataURL('image/png');
+        photo.src = dataURL;
+        photo.style.display = 'block';
+        canvas.style.display = 'none';
+
+        console.log('Imagem capturada:', dataURL);
+    });
+}
