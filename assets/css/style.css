@@ -279,6 +279,30 @@ body {
     color: #555;
 }
 
+/* Estilos para a câmera */
+#camera {
+    max-width: 100%;
+    height: auto;
+    margin-bottom: 1rem;
+}
+
+#photo {
+    max-width: 100%;
+    height: auto;
+    margin-bottom: 1rem;
+}
+
+#captureBtn {
+    margin: 0 auto;
+    display: block;
+    width: auto;
+    padding: 0.8rem 2rem;
+}
+
+.form-step[data-step="5"] .input-box {
+    text-align: center;
+}
+
 /* Responsividade */
 @media screen and (max-width: 768px) {
     .container {
