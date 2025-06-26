@@ -517,7 +517,7 @@ document.addEventListener('DOMContentLoaded', function() {
     }
 
     // Evento de submit do formulário
-    form.addEventListener('button', function(e) {
+    form.addEventListener('submit', function(e) {
         e.preventDefault();
 
         // Se estiver no passo 4 (câmera), verifique se a foto foi tirada
