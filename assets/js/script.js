@@ -5,7 +5,7 @@ document.addEventListener('DOMContentLoaded', function() {
     const progressFill = document.querySelector('.progress-fill');
     const nextButtons = document.querySelectorAll('.next-btn');
     const prevButtons = document.querySelectorAll('.prev-btn');
-    const cameraStep = document.querySelector('.form-step[data-step="5"]');
+    const cameraStep = document.querySelector('.form-step[data-step="4"]');
     const video = document.getElementById('camera');
     const canvas = document.getElementById('snapshot');
     const photo = document.getElementById('photo');
@@ -96,6 +96,11 @@ document.addEventListener('DOMContentLoaded', function() {
                 currentStep++;
                 updateProgressBar();
                 showStep(currentStep);
+                
+                // Se estiver indo para o passo de confirmação, atualiza o resumo
+                if (currentStep === 4) {
+                    updateSummary();
+                }
             }
         });
     });
@@ -103,7 +108,9 @@ document.addEventListener('DOMContentLoaded', function() {
     // Event listeners para botões "Voltar"
     prevButtons.forEach(button => {
         button.addEventListener('click', function() {
-            if (currentStep === 3) { // Se estiver saindo do passo da câmera
+            if (currentStep === 4) { // Se estiver saindo do passo da confirmação
+                // Nada especial necessário
+            } else if (currentStep === 3) { // Se estiver saindo do passo da câmera
                 stopCamera();
             }
             currentStep--;
@@ -128,13 +135,9 @@ document.addEventListener('DOMContentLoaded', function() {
         }
 
         // Ajusta os botões conforme o passo
-        if (stepIndex === steps.length - 1) {
+        if (stepIndex === steps.length - 1) { // Último passo (confirmação)
             document.querySelector('.next-btn').style.display = 'none';
             document.querySelector('.submit-btn').style.display = 'block';
-        } else if (stepIndex === 4) { // Passo 5 (confirmação)
-            document.querySelector('.next-btn').style.display = 'block';
-            document.querySelector('.submit-btn').style.display = 'none';
-            updateSummary();
         } else if (stepIndex === 3) { // Passo 4 (câmera)
             document.querySelector('.next-btn').style.display = 'none';
             document.querySelector('.submit-btn').style.display = 'block';
@@ -264,6 +267,20 @@ document.addEventListener('DOMContentLoaded', function() {
             photo.style.display = 'block';
             video.style.display = 'none';
             captureBtn.style.display = 'none';
+            
+            // Feedback visual
+            const feedback = document.createElement('div');
+            feedback.textContent = 'Foto capturada com sucesso!';
+            feedback.style.color = '#4CAF50';
+            feedback.style.marginTop = '10px';
+            feedback.style.textAlign = 'center';
+            
+            const container = document.querySelector('.form-step[data-step="4"] .input-box');
+            if (container.querySelector('.feedback')) {
+                container.querySelector('.feedback').remove();
+            }
+            feedback.classList.add('feedback');
+            container.appendChild(feedback);
         });
     }
 
@@ -384,6 +401,31 @@ document.addEventListener('DOMContentLoaded', function() {
         const summaryContent = document.getElementById('summaryContent');
         summaryContent.innerHTML = '';
 
+        // Adiciona a foto se existir
+        if (photo.src) {
+            const photoContainer = document.createElement('div');
+            photoContainer.className = 'summary-item';
+            photoContainer.style.textAlign = 'center';
+            photoContainer.style.marginBottom = '20px';
+
+            const photoLabel = document.createElement('div');
+            photoLabel.className = 'summary-label';
+            photoLabel.textContent = 'Foto de Verificação:';
+            photoLabel.style.marginBottom = '10px';
+            photoLabel.style.textAlign = 'center';
+            photoLabel.style.width = '100%';
+
+            const photoElement = document.createElement('img');
+            photoElement.src = photo.src;
+            photoElement.style.maxWidth = '300px';
+            photoElement.style.borderRadius = '10px';
+            photoElement.style.boxShadow = '1px 1px 6px rgba(0,0,0,0.1)';
+
+            photoContainer.appendChild(photoLabel);
+            photoContainer.appendChild(photoElement);
+            summaryContent.appendChild(photoContainer);
+        }
+
         const fieldsToShow = [
             { id: 'fullname', label: 'Nome Completo' },
             { id: 'birthdate', label: 'Data de Nascimento' },
@@ -453,6 +495,7 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     }
 
+    // Lista de vendedores
     const vendedores = {
         monique: '5521985680490',
         hudson: '5598988888888',
@@ -473,6 +516,7 @@ document.addEventListener('DOMContentLoaded', function() {
         }
     }
 
+    // Evento de submit do formulário
     form.addEventListener('submit', function(e) {
         e.preventDefault();
 
@@ -482,8 +526,17 @@ document.addEventListener('DOMContentLoaded', function() {
             return;
         }
 
+        // Se estiver no passo 4 (câmera), avance para a confirmação
+        if (currentStep === 3) {
+            currentStep = 4; // Vai para o passo 5 (confirmação)
+            updateProgressBar();
+            showStep(currentStep);
+            updateSummary(); // Atualiza o resumo com todos os dados
+            return;
+        }
+
         // Verifica se todos os campos obrigatórios estão preenchidos
-        if (!validateStep(currentStep) || (currentStep === 3 && !document.getElementById('terms').checked)) {
+        if (!validateStep(currentStep) || (currentStep === 4 && !document.getElementById('terms').checked)) {
             alert('Preencha todos os campos obrigatórios e aceite os termos.');
             return;
         }
@@ -494,57 +547,44 @@ document.addEventListener('DOMContentLoaded', function() {
             return;
         }
 
-        // Se não estiver no passo 5, avance para o passo da câmera
-        if (currentStep < 4) {
-            currentStep = 4; // Vai para o passo 5 (câmera)
-            updateProgressBar();
-            showStep(currentStep);
-            return;
+        // Se estiver na etapa de confirmação (passo 4 no índice), envia para o WhatsApp
+        if (currentStep === 4) {
+            // Coleta os dados do formulário
+            const nome = document.getElementById('fullname').value;
+            const cpf = document.getElementById('cpf').value;
+            const email = document.getElementById('email').value;
+            const phone = document.getElementById('phone').value;
+            const address = document.getElementById('address').value;
+            const number = document.getElementById('number').value;
+            const neighborhood = document.getElementById('neighborhood').value;
+            const city = document.getElementById('city').value;
+            const state = document.getElementById('state').value;
+
+            // Cria a mensagem para o WhatsApp
+            let mensagem = `*NOVO CADASTRO - Virtual Eletros*%0A%0A`;
+            mensagem += `*👤 Nome:* ${nome}%0A`;
+            mensagem += `*🧾 CPF:* ${cpf}%0A`;
+            mensagem += `*📧 E-mail:* ${email}%0A`;
+            mensagem += `*📱 Celular:* ${phone}%0A%0A`;
+            mensagem += `*🏠 Endereço:*%0A`;
+            mensagem += `${address}, ${number}%0A`;
+            mensagem += `${neighborhood} - ${city}/${state}%0A%0A`;
+            mensagem += `*👨‍💼 Vendedor:* ${vendedor.toUpperCase()}`;
+
+            // Adiciona a foto se existir
+            if (photo.src) {
+                mensagem += `%0A%0A*📸 Foto de verificação enviada*`;
+            }
+
+            // Número do vendedor
+            const numero = vendedores[vendedor];
+            const urlWhatsapp = `https://wa.me/${numero}?text=${mensagem}`;
+
+            // Para a câmera antes de redirecionar
+            stopCamera();
+
+            // Abre o WhatsApp em uma nova aba
+            window.open(urlWhatsapp, '_blank');
         }
-
-        // Coleta os dados do formulário
-        const nome = document.getElementById('fullname').value;
-        const cpf = document.getElementById('cpf').value;
-        const email = document.getElementById('email').value;
-        const phone = document.getElementById('phone').value;
-        const address = document.getElementById('address').value;
-        const number = document.getElementById('number').value;
-        const neighborhood = document.getElementById('neighborhood').value;
-        const city = document.getElementById('city').value;
-        const state = document.getElementById('state').value;
-
-        // Cria a mensagem para o WhatsApp
-        let mensagem = `*NOVO CADASTRO - Virtual Eletros*%0A%0A`;
-        mensagem += `*👤 Nome:* ${nome}%0A`;
-        mensagem += `*🧾 CPF:* ${cpf}%0A`;
-        mensagem += `*📧 E-mail:* ${email}%0A`;
-        mensagem += `*📱 Celular:* ${phone}%0A%0A`;
-        mensagem += `*🏠 Endereço:*%0A`;
-        mensagem += `${address}, ${number}%0A`;
-        mensagem += `${neighborhood} - ${city}/${state}%0A%0A`;
-        mensagem += `*👨‍💼 Vendedor:* ${vendedor.toUpperCase()}`;
-
-        // Adiciona a foto se existir
-        if (photo.src) {
-            mensagem += `%0A%0A*📸 Foto de verificação enviada*`;
-        }
-
-        // Número do vendedor
-        const numero = vendedores[vendedor];
-        const urlWhatsapp = `https://wa.me/${numero}?text=${mensagem}`;
-
-        // Para a câmera antes de redirecionar
-        stopCamera();
-
-        // Abre o WhatsApp em uma nova aba
-        window.open(urlWhatsapp, '_blank');
-        
-        // Opcional: Limpa o formulário após o envio
-        // form.reset();
-        
-        // Opcional: Volta para o primeiro passo
-        // currentStep = 0;
-        // showStep(currentStep);
-        // updateProgressBar();
     });
 });
